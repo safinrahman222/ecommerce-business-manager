@@ -3,101 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Full E-Commerce Business Manager</title>
+    <title>Cuir Elegante E-Commerce Business Manager</title>
     <style>
         *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
         body{background:#f0f2f5;padding:20px;}
-        .container{max-width:1200px;margin:0 auto;background:#fff;padding:30px;border-radius:12px;box-shadow:0 2px 15px #00000015;}
-        h1,h2{color:#222;margin-bottom:20px;}
-        .section{margin:35px 0;}
+        .container{max-width:1300px;margin:0 auto;background:#fff;padding:30px;border-radius:12px;box-shadow:0 2px 15px #00000015;}
+        h1,h2,h3{color:#222;margin-bottom:15px;}
+        .section{margin:40px 0;}
 
-        /* Dashboard Cards */
-        .dashboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:30px;}
-        .card{padding:20px;border-radius:10px;color:#fff;}
-        .card:nth-child(1){background:#2563eb;}
-        .card:nth-child(2){background:#16a34a;}
-        .card:nth-child(3){background:#f59e0b;}
-        .card:nth-child(4){background:#ef4444;}
-        .card:nth-child(5){background:#8b5cf6;}
-        .card h4{font-size:15px;opacity:0.9;}
-        .card p{font-size:24px;font-weight:bold;margin-top:8px;}
+        .dashboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px;margin-bottom:30px;}
+        .card{padding:22px;border-radius:10px;color:white;}
+        .card1{background:#2563eb;}
+        .card2{background:#16a34a;}
+        .card3{background:#f59e0b;}
+        .card4{background:#ef4444;}
+        .card5{background:#8b5cf6;}
+        .card6{background:#0ea5e9;}
+        .card7{background:#d946ef;}
+        .card h4{font-size:14px;opacity:0.9;margin-bottom:6px;}
+        .card p{font-size:22px;font-weight:bold;}
 
-        /* Form Styles */
-        input,select{padding:10px;margin:6px;border:1px solid #ddd;border-radius:6px;min-width:140px;}
+        input,select{padding:10px;margin:6px;border:1px solid #ddd;border-radius:6px;min-width:150px;}
         button{padding:10px 16px;border:none;border-radius:6px;cursor:pointer;font-weight:500;margin:4px;}
         .btn-add{background:#16a34a;color:white;}
         .btn-edit{background:#2563eb;color:white;}
         .btn-del{background:#dc2626;color:white;}
         .btn-export{background:#8b5cf6;color:white;}
 
-        /* Tables */
         table{width:100%;border-collapse:collapse;margin-top:15px;}
         th,td{padding:12px;text-align:left;border-bottom:1px solid #eee;}
         th{background:#f8f9fa;}
         .low-stock{background:#fee2e2 !important;}
 
-        /* Tabs & Filters */
-        .filter-bar{margin:15px 0;}
+        .filter-bar{margin:20px 0;}
+        .expense-box{background:#f8fafc;padding:15px;border-radius:8px;margin:10px 0;}
     </style>
 </head>
 <body>
+
 <div class="container">
-    <h1>🛒 E-Commerce Full Management System</h1>
+    <h1>🛍️ ULTIMATE E-COMMERCE MANAGER</h1>
 
     <!-- DASHBOARD -->
     <div class="dashboard">
-        <div class="card"><h4>Total Stock Left</h4><p id="totalStock">0</p></div>
-        <div class="card"><h4>Total Sold</h4><p id="totalSold">0</p></div>
-        <div class="card"><h4>Monthly Revenue</h4><p id="monthlyRev">$0.00</p></div>
-        <div class="card"><h4>Monthly Profit</h4><p id="monthlyProfit">$0.00</p></div>
-        <div class="card"><h4>Top Trending Product</h4><p id="topProduct">-</p></div>
+        <div class="card card1"><h4>Total Stock Left</h4><p id="totalStock">0</p></div>
+        <div class="card card2"><h4>Total Sold</h4><p id="totalSold">0</p></div>
+        <div class="card card3"><h4>Total Revenue</h4><p id="totalRev">$0.00</p></div>
+        <div class="card card4"><h4>REAL NET PROFIT</h4><p id="netProfit">$0.00</p></div>
+        <div class="card card5"><h4>Top Product</h4><p id="topProduct">-</p></div>
+        <div class="card card6"><h4>Total Expenses</h4><p id="totalExpense">$0.00</p></div>
+        <div class="card card7"><h4>Monthly Profit</h4><p id="monthlyProf">$0.00</p></div>
     </div>
 
-    <!-- MONTH / YEAR FILTER -->
+    <!-- FILTERS -->
     <div class="filter-bar">
-        <h3>Filter Sales</h3>
+        <h3>Filter Sales by Month/Year</h3>
         <select id="filterMode">
-            <option value="month">Monthly</option>
-            <option value="year">Yearly</option>
+            <option value="month">This Month</option>
+            <option value="year">This Year</option>
         </select>
         <input type="month" id="dateFilter">
-        <button onclick="updateDashboard()" class="btn-add">Apply Filter</button>
-        <button onclick="exportToExcel()" class="btn-export">📤 Export to Excel</button>
+        <button onclick="updateAll()" class="btn-add">Apply Filter</button>
+        <button onclick="exportToExcel()" class="btn-export">📤 Export Full Report</button>
     </div>
 
-    <!-- ADD / EDIT PRODUCT -->
+    <!-- ADD PRODUCT + EXPENSES -->
     <div class="section">
-        <h2>📦 Add / Edit Product</h2>
+        <h2>📦 Add / Edit Product (With All Costs)</h2>
         <input type="hidden" id="editId">
-        <input type="text" id="prodName" placeholder="Product Name">
-        <input type="number" id="prodCost" placeholder="Cost Price" step="0.01">
+        <input type="text" id="prodName" placeholder="Product Name" required>
+        <input type="number" id="prodCost" placeholder="Product Cost Price" step="0.01">
         <input type="number" id="prodSell" placeholder="Selling Price" step="0.01">
         <input type="number" id="prodStock" placeholder="Current Stock">
         <input type="number" id="prodSold" placeholder="Total Sold">
-        <button onclick="saveProduct()" class="btn-add">Save</button>
+
+        <div class="expense-box">
+            <h3>Additional Costs (for REAL profit)</h3>
+            <input type="number" id="adsCost" placeholder="Ads / Boosting Cost" step="0.01" value="0">
+            <input type="number" id="shipCost" placeholder="Shipping Cost per Item" step="0.01" value="0">
+            <input type="number" id="packCost" placeholder="Packaging Cost per Item" step="0.01" value="0">
+        </div>
+
+        <button onclick="saveProduct()" class="btn-add">Save Product</button>
     </div>
 
-    <!-- PRODUCT LIST + LOW STOCK ALERT -->
+    <!-- PRODUCT TABLE -->
     <div class="section">
-        <h2>📋 Product List <small style="color:red">(Red = Low Stock)</small></h2>
+        <h2>📋 Product List <span style="color:red">Red = Low Stock</span></h2>
         <table>
             <thead>
                 <tr>
-                    <th>Name</th>
+                    <th>Product</th>
                     <th>Cost</th>
-                    <th>Sell Price</th>
+                    <th>Sell</th>
                     <th>Sold</th>
                     <th>Stock</th>
-                    <th>Total Revenue</th>
-                    <th>Total Profit</th>
-                    <th>> Actions</th>
+                    <th>Total Expenses</th>
+                    <th>Revenue</th>
+                    <th>NET PROFIT</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody id="productTable"></tbody>
         </table>
     </div>
 
-    <!-- CUSTOMER ORDER TRACKING -->
+    <!-- CUSTOMER ORDERS -->
     <div class="section">
         <h2>👤 Customer Order Tracking</h2>
         <input type="text" id="custName" placeholder="Customer Name">
@@ -112,8 +123,8 @@
                     <th>Customer</th>
                     <th>Product</th>
                     <th>Qty</th>
-                    <th>Order Date</th>
-                    <th>Action</th>
+                    <th>Date</th>
+                    <th>Delete</th>
                 </tr>
             </thead>
             <tbody id="customerTable"></tbody>
@@ -122,65 +133,72 @@
 </div>
 
 <script>
-// Data Storage
-let products = JSON.parse(localStorage.getItem("ecm_products")) || [];
-let customers = JSON.parse(localStorage.getItem("ecm_customers")) || [];
-let lowStockLimit = 10; // Auto low stock alert below this number
+// DATA STORAGE
+let products = JSON.parse(localStorage.getItem("final_shop_products")) || [];
+let customers = JSON.parse(localStorage.getItem("final_shop_customers")) || [];
+let lowStockLimit = 10;
 
-// Save Products
+// SAVE PRODUCT
 function saveProduct(){
-    const editId = document.getElementById("editId").value;
+    const id = document.getElementById("editId").value;
     const name = document.getElementById("prodName").value.trim();
-    const cost = parseFloat(document.getElementById("prodCost").value);
-    const sell = parseFloat(document.getElementById("prodSell").value);
-    const stock = parseInt(document.getElementById("prodStock").value);
-    const sold = parseInt(document.getElementById("prodSold").value);
+    const cost = parseFloat(document.getElementById("prodCost").value) || 0;
+    const sell = parseFloat(document.getElementById("prodSell").value) || 0;
+    const stock = parseInt(document.getElementById("prodStock").value) || 0;
+    const sold = parseInt(document.getElementById("prodSold").value) || 0;
+    const ads = parseFloat(document.getElementById("adsCost").value) || 0;
+    const ship = parseFloat(document.getElementById("shipCost").value) || 0;
+    const pack = parseFloat(document.getElementById("packCost").value) || 0;
 
-    if(!name) return alert("Enter product name");
+    if(!name) { alert("Enter product name"); return; }
 
-    const item = {name,cost,sell,stock,sold,date:new Date().toISOString()};
+    const item = {
+        name,cost,sell,stock,sold,ads,ship,pack,
+        date: new Date().toISOString()
+    };
 
-    if(editId){
-        products[editId] = item;
-        document.getElementById("editId").value = "";
-    }else{
-        products.push(item);
-    }
+    if(id) products[id] = item;
+    else products.push(item);
 
-    localStorage.setItem("ecm_products",JSON.stringify(products));
-    clearProductForm();
+    localStorage.setItem("final_shop_products", JSON.stringify(products));
+    clearForm();
     renderProducts();
-    updateDashboard();
+    updateAll();
 }
 
-// Clear Form
-function clearProductForm(){
+// CLEAR FORM
+function clearForm(){
+    document.getElementById("editId").value = "";
     document.getElementById("prodName").value = "";
     document.getElementById("prodCost").value = "";
     document.getElementById("prodSell").value = "";
     document.getElementById("prodStock").value = "";
     document.getElementById("prodSold").value = "";
+    document.getElementById("adsCost").value = "0";
+    document.getElementById("shipCost").value = "0";
+    document.getElementById("packCost").value = "0";
 }
 
-// Render Products + Low Stock Highlight
+// RENDER PRODUCTS
 function renderProducts(){
     const tb = document.getElementById("productTable");
     tb.innerHTML = "";
-
-    products.forEach((p,i)=>{
-        const rev = p.sell * p.sold;
-        const prof = (p.sell - p.cost) * p.sold;
-        const lowClass = p.stock < lowStockLimit ? "low-stock" : "";
+    products.forEach((p,i) => {
+        const totalExpensePerItem = p.cost + p.ads + p.ship + p.pack;
+        const revenue = p.sell * p.sold;
+        const netProfit = (p.sell - totalExpensePerItem) * p.sold;
+        const low = p.stock < lowStockLimit ? "low-stock" : "";
 
         tb.innerHTML += `
-        <tr class="${lowClass}">
+        <tr class="${low}">
             <td>${p.name}</td>
             <td>$${p.cost.toFixed(2)}</td>
             <td>$${p.sell.toFixed(2)}</td>
             <td>${p.sold}</td>
             <td>${p.stock}</td>
-            <td>$${rev.toFixed(2)}</td>
-            <td>$${prof.toFixed(2)}</td>
+            <td>$${(totalExpensePerItem*p.sold).toFixed(2)}</td>
+            <td>$${revenue.toFixed(2)}</td>
+            <td>$${netProfit.toFixed(2)}</td>
             <td>
                 <button class="btn-edit" onclick="editProduct(${i})">Edit</button>
                 <button class="btn-del" onclick="deleteProduct(${i})">Delete</button>
@@ -189,7 +207,7 @@ function renderProducts(){
     });
 }
 
-// Edit Product
+// EDIT
 function editProduct(i){
     const p = products[i];
     document.getElementById("editId").value = i;
@@ -198,67 +216,72 @@ function editProduct(i){
     document.getElementById("prodSell").value = p.sell;
     document.getElementById("prodStock").value = p.stock;
     document.getElementById("prodSold").value = p.sold;
+    document.getElementById("adsCost").value = p.ads || 0;
+    document.getElementById("shipCost").value = p.ship || 0;
+    document.getElementById("packCost").value = p.pack || 0;
 }
 
-// Delete Product
+// DELETE
 function deleteProduct(i){
-    if(!confirm("Delete this product?"))return;
+    if(!confirm("Delete this product?")) return;
     products.splice(i,1);
-    localStorage.setItem("ecm_products",JSON.stringify(products));
+    localStorage.setItem("final_shop_products", JSON.stringify(products));
     renderProducts();
-    updateDashboard();
+    updateAll();
 }
 
-// Dashboard + Monthly/Yearly Filter
-function updateDashboard(){
-    let totalStock = 0, totalSold = 0, monthlyRev = 0, monthlyProf = 0;
-    let topName = "-", maxSold = 0;
+// DASHBOARD
+function updateAll(){
+    let totalStock=0, totalSold=0, totalRev=0, totalNetProfit=0, totalExpense=0;
+    let topName="-", maxSold=0;
+    let monthlyRev=0, monthlyProf=0;
+
     const filterVal = document.getElementById("dateFilter").value;
     const filterType = document.getElementById("filterMode").value;
 
-    products.forEach(p=>{
+    products.forEach(p => {
+        const expPerItem = p.cost + p.ads + p.ship + p.pack;
+        const rev = p.sell * p.sold;
+        const np = (p.sell - expPerItem) * p.sold;
+        const expTotal = expPerItem * p.sold;
+
         totalStock += p.stock;
         totalSold += p.sold;
+        totalRev += rev;
+        totalNetProfit += np;
+        totalExpense += expTotal;
+
+        if(p.sold > maxSold){ maxSold = p.sold; topName = p.name; }
+
         const d = new Date(p.date);
         let match = true;
-
         if(filterVal){
-            const fDate = filterVal.split("-");
-            if(filterType === "month"){
-                match = d.getFullYear() == fDate[0] && d.getMonth()+1 == fDate[1];
-            }else{
-                match = d.getFullYear() == fDate[0];
-            }
+            const f = filterVal.split("-");
+            if(filterType === "month") match = (d.getFullYear()==f[0] && d.getMonth()+1==f[1]);
+            else match = (d.getFullYear()==f[0]);
         }
-
-        if(match){
-            monthlyRev += p.sell * p.sold;
-            monthlyProf += (p.sell - p.cost) * p.sold;
-        }
-
-        if(p.sold > maxSold){
-            maxSold = p.sold;
-            topName = p.name;
-        }
+        if(match){ monthlyRev += rev; monthlyProf += np; }
     });
 
     document.getElementById("totalStock").innerText = totalStock;
     document.getElementById("totalSold").innerText = totalSold;
-    document.getElementById("monthlyRev").innerText = `$${monthlyRev.toFixed(2)}`;
-    document.getElementById("monthlyProfit").innerText = `$${monthlyProf.toFixed(2)}`;
+    document.getElementById("totalRev").innerText = "$"+totalRev.toFixed(2);
+    document.getElementById("netProfit").innerText = "$"+totalNetProfit.toFixed(2);
+    document.getElementById("totalExpense").innerText = "$"+totalExpense.toFixed(2);
+    document.getElementById("monthlyProf").innerText = "$"+monthlyProf.toFixed(2);
     document.getElementById("topProduct").innerText = topName;
 }
 
-// Customer Tracking
+// CUSTOMERS
 function addCustomer(){
-    const cust = {
-        name:document.getElementById("custName").value,
-        product:document.getElementById("custProd").value,
-        qty:document.getElementById("custQty").value,
-        date:document.getElementById("orderDate").value
+    const c = {
+        name: document.getElementById("custName").value,
+        product: document.getElementById("custProd").value,
+        qty: document.getElementById("custQty").value,
+        date: document.getElementById("orderDate").value
     };
-    customers.push(cust);
-    localStorage.setItem("ecm_customers",JSON.stringify(customers));
+    customers.push(c);
+    localStorage.setItem("final_shop_customers", JSON.stringify(customers));
     renderCustomers();
     document.getElementById("custName").value = "";
     document.getElementById("custProd").value = "";
@@ -268,7 +291,7 @@ function addCustomer(){
 function renderCustomers(){
     const tb = document.getElementById("customerTable");
     tb.innerHTML = "";
-    customers.forEach((c,i)=>{
+    customers.forEach((c,i) => {
         tb.innerHTML += `
         <tr>
             <td>${c.name}</td>
@@ -282,30 +305,29 @@ function renderCustomers(){
 
 function delCust(i){
     customers.splice(i,1);
-    localStorage.setItem("ecm_customers",JSON.stringify(customers));
+    localStorage.setItem("final_shop_customers", JSON.stringify(customers));
     renderCustomers();
 }
 
-// Export to Excel
+// EXPORT
 function exportToExcel(){
-    let csv = "Product Name,Cost,Sell Price,Sold,Stock,Revenue,Profit\n";
-    products.forEach(p=>{
-        csv += `${p.name},${p.cost},${p.sell},${p.sold},${p.stock},${(p.sell*p.sold).toFixed(2)},${((p.sell-p.cost)*p.sold).toFixed(2)}\n`;
+    let csv = "Product Name,Cost,Ads,Shipping,Packaging,Total Expense,Sell Price,Sold,Revenue,NET PROFIT\n";
+    products.forEach(p => {
+        const exp = p.cost + p.ads + p.ship + p.pack;
+        const rev = p.sell * p.sold;
+        const np = (p.sell - exp) * p.sold;
+        csv += `${p.name},${p.cost},${p.ads},${p.ship},${p.pack},${(exp*p.sold).toFixed(2)},${p.sell},${p.sold},${rev.toFixed(2)},${np.toFixed(2)}\n`;
     });
-    const blob = new Blob([csv],{type:"text/csv"});
+    const blob = new Blob([csv], {type:"text/csv"});
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `Ecommerce_Report_${new Date().toLocaleDateString()}.csv`;
+    a.download = "Ecommerce_Full_Report.csv";
     a.click();
 }
 
-// Load All
-window.onload = ()=>{
-    renderProducts();
-    renderCustomers();
-    updateDashboard();
-};
+// LOAD
+window.onload = () => { renderProducts(); renderCustomers(); updateAll(); };
 </script>
 </body>
 </html>
