@@ -3,118 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cuir Elegante E-Commerce Manager </title>
+    <title>My E-Commerce Manager (FULL VERSION)</title>
     <style>
-        *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
-        body{background:#f0f2f5;padding:20px;}
-        .container{max-width:1300px;margin:0 auto;background:#fff;padding:30px;border-radius:12px;box-shadow:0 2px 15px #00000015;}
-        h1,h2,h3{color:#222;margin-bottom:15px;}
+        *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif;}
+        body{background:#f4f4f4;padding:20px;}
+        .container{max-width:1400px;margin:auto;background:white;padding:30px;border-radius:12px;box-shadow:0 0 10px #00000010;}
+        h1,h2,h3{margin-bottom:15px;color:#222;}
         .section{margin:40px 0;}
 
-        .dashboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px;margin-bottom:30px;}
-        .card{padding:22px;border-radius:10px;color:white;}
-        .card1{background:#2563eb;}
-        .card2{background:#16a34a;}
-        .card3{background:#f59e0b;}
-        .card4{background:#ef4444;}
-        .card5{background:#8b5cf6;}
-        .card6{background:#0ea5e9;}
-        .card7{background:#d946ef;}
-        .card h4{font-size:14px;opacity:0.9;margin-bottom:6px;}
-        .card p{font-size:22px;font-weight:bold;}
+        .dashboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:15px;margin-bottom:25px;}
+        .card{padding:20px;border-radius:10px;color:white;}
+        .blue{background:#2563eb;}
+        .green{background:#16a34a;}
+        .orange{background:#f97316;}
+        .red{background:#ef4444;}
+        .purple{background:#a855f7;}
+        .teal{background:#0d9488;}
+        .pink{background:#ec4899;}
+        .card h4{font-size:14px;opacity:0.9;}
+        .card p{font-size:20px;font-weight:bold;margin-top:5px;}
 
-        input,select{padding:10px;margin:6px;border:1px solid #ddd;border-radius:6px;min-width:150px;}
-        button{padding:10px 16px;border:none;border-radius:6px;cursor:pointer;font-weight:500;margin:4px;}
+        input,select,button{padding:10px;margin:5px;border-radius:6px;border:1px solid #ddd;}
+        button{cursor:pointer;border:none;font-weight:bold;}
         .btn-add{background:#16a34a;color:white;}
+        .btn-import{background:#ea580c;color:white;}
+        .btn-export{background:#7c3aed;color:white;}
         .btn-edit{background:#2563eb;color:white;}
         .btn-del{background:#dc2626;color:white;}
-        .btn-export{background:#8b5cf6;color:white;}
-        .btn-import{background:#e64a19;color:white;}
 
-        table{width:100%;border-collapse:collapse;margin-top:15px;}
+        table{width:100%;border-collapse:collapse;margin-top:15px;background:white;}
         th,td{padding:12px;text-align:left;border-bottom:1px solid #eee;}
         th{background:#f8fafc;}
-        .low-stock{background:#fee2e2 !important;}
+        .low-stock{background:#fee2e2 !important; border-left:4px solid red;}
+        .img-preview{width:50px;height:50px;object-fit:cover;border-radius:6px;}
 
-        .filter-bar{margin:20px 0;}
-        .expense-box{background:#f8fafc;padding:15px;border-radius:8px;margin:10px 0;}
-        .import-box{margin:20px 0;padding:15px;border:2px dashed #ddd;border-radius:8px;}
-        #fileStatus{margin:10px 0;color:green;font-weight:bold;}
+        .import-box{border:2px dashed #ccc;padding:20px;border-radius:10px;margin:20px 0;background:#fafafa;}
+        .image-box{margin:10px 0;}
+        .notification{color:red;font-weight:bold;background:#ffefef;padding:10px;border-radius:6px;margin:10px 0;display:none;}
     </style>
-    <!-- Add Excel reading library (required for import) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
 <div class="container">
-    <h1>🛍️ Cuir Elegante E-COMMERCE MANAGER </h1>
+    <h1>🛒 MY E-COMMERCE MANAGEMENT SYSTEM</h1>
+    <div id="lowStockAlert" class="notification">⚠️ LOW STOCK WARNING!</div>
 
-    <!-- NEW EXCEL IMPORT SECTION -->
+    <!-- EXCEL IMPORT (YOUR EXACT FORMAT) -->
     <div class="import-box">
-        <h2>📥 Import Excel Data (e.g., March Orders)</h2>
-        <p>Upload your Excel file (XLS/XLSX) — system will auto-add all products</p>
-        <input type="file" id="excelFile" accept=".xls,.xlsx" style="margin:10px 0;">
-        <button onclick="importExcel()" class="btn-import">Import Excel Data</button>
-        <div id="fileStatus"></div> <!-- Shows success/error message -->
+        <h2>📥 Import YOUR Excel Orders</h2>
+        <p>Columns: Order ID | Date | Order Type | Order Status | Item Name | Item Price | Item Quantity | Item Warranty | Delivery Zone | Total Amount | Delivery Charge | Discount Amount(Percentage) | Vat Amount (Percentage) | Grand Total | Paid Amount | Due Amount | Customer Name | Customer Number | Email | Address | Customer Note | Custom Fields | Variants</p>
+        <input type="file" id="excelFile" accept=".xls,.xlsx">
+        <button onclick="importYourExcel()" class="btn-import">Import Excel Data</button>
+        <p id="importMsg"></p>
     </div>
 
-    <!-- DASHBOARD -->
+    <!-- DASHBOARD (ALL METRICS YOU NEED) -->
     <div class="dashboard">
-        <div class="card card1"><h4>Total Stock Left</h4><p id="totalStock">0</p></div>
-        <div class="card card2"><h4>Total Sold</h4><p id="totalSold">0</p></div>
-        <div class="card card3"><h4>Total Revenue</h4><p id="totalRev">$0.00</p></div>
-        <div class="card card4"><h4>REAL NET PROFIT</h4><p id="netProfit">$0.00</p></div>
-        <div class="card card5"><h4>Top Product</h4><p id="topProduct">-</p></div>
-        <div class="card card6"><h4>Total Expenses</h4><p id="totalExpense">$0.00</p></div>
-        <div class="card card7"><h4>Monthly Profit</h4><p id="monthlyProf">$0.00</p></div>
+        <div class="card blue"><h4>Total Products</h4><p id="totalProducts">0</p></div>
+        <div class="card green"><h4>Total Stock Left</h4><p id="totalStock">0</p></div>
+        <div class="card orange"><h4>Total Sold</h4><p id="totalSold">0</p></div>
+        <div class="card red"><h4>Total Revenue</h4><p id="totalRev">$0.00</p></div>
+        <div class="card purple"><h4>TOTAL EXPENSES</h4><p id="totalExp">$0.00</p></div>
+        <div class="card teal"><h4>REAL NET PROFIT</h4><p id="netProfit">$0.00</p></div>
+        <div class="card pink"><h4>MONTHLY PROFIT</h4><p id="monthlyProfit">$0.00</p></div>
+        <div class="card blue"><h4>TRENDING PRODUCT</h4><p id="trending" style="font-size:15px;">-</p></div>
     </div>
 
-    <!-- FILTERS -->
-    <div class="filter-bar">
-        <h3>Filter Sales by Month/Year</h3>
-        <select id="filterMode">
-            <option value="month">This Month</option>
-            <option value="year">This Year</option>
-        </select>
-        <input type="month" id="dateFilter">
-        <button onclick="updateAll()" class="btn-add">Apply Filter</button>
-        <button onclick="exportToExcel()" class="btn-export">📤 Export Full Report</button>
+    <div style="margin:10px 0;">
+        <input type="month" id="monthFilter" onchange="updateDashboard()">
+        <button onclick="updateDashboard()" class="btn-add">Refresh Monthly Profit</button>
     </div>
 
-    <!-- ADD PRODUCT + EXPENSES -->
+    <!-- ADD PRODUCT WITH IMAGE -->
     <div class="section">
-        <h2>📦 Add / Edit Product (With All Costs)</h2>
+        <h2>📦 Add Product + Upload Image</h2>
         <input type="hidden" id="editId">
-        <input type="text" id="prodName" placeholder="Product Name" required>
-        <input type="number" id="prodCost" placeholder="Product Cost Price" step="0.01">
-        <input type="number" id="prodSell" placeholder="Selling Price" step="0.01">
-        <input type="number" id="prodStock" placeholder="Current Stock">
-        <input type="number" id="prodSold" placeholder="Total Sold">
+        <input type="text" id="pName" placeholder="Product Name" required>
+        <input type="number" id="pCost" placeholder="Cost Price">
+        <input type="number" id="pSell" placeholder="Selling Price">
+        <input type="number" id="pStock" placeholder="Stock">
+        <input type="number" id="pSold" placeholder="Sold">
 
-        <div class="expense-box">
-            <h3>Additional Costs (for REAL profit)</h3>
-            <input type="number" id="adsCost" placeholder="Ads / Boosting Cost" step="0.01" value="0">
-            <input type="number" id="shipCost" placeholder="Shipping Cost per Item" step="0.01" value="0">
-            <input type="number" id="packCost" placeholder="Packaging Cost per Item" step="0.01" value="0">
+        <div class="image-box">
+            <input type="file" id="pImage" accept="image/*" onchange="previewImage(event)">
+            <img id="imagePreview" class="img-preview" style="display:none;">
         </div>
 
+        <input type="number" id="pAds" placeholder="Ads Cost" value="0">
+        <input type="number" id="pShip" placeholder="Shipping Cost" value="0">
+        <input type="number" id="pPack" placeholder="Packaging Cost" value="0">
+
         <button onclick="saveProduct()" class="btn-add">Save Product</button>
+        <button onclick="clearForm()" class="btn-del">Clear</button>
     </div>
 
-    <!-- PRODUCT TABLE -->
+    <!-- PRODUCT LIST -->
     <div class="section">
-        <h2>📋 Product List <span style="color:red">Red = Low Stock</span></h2>
+        <h2>📋 Product Stock (RED = LOW STOCK)</h2>
         <table>
             <thead>
                 <tr>
+                    <th>Image</th>
                     <th>Product</th>
                     <th>Cost</th>
                     <th>Sell</th>
-                    <th>Sold</th>
                     <th>Stock</th>
-                    <th>Total Expenses</th>
-                    <th>Revenue</th>
-                    <th>NET PROFIT</th>
+                    <th>Sold</th>
+                    <th>Profit</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -122,330 +118,252 @@
         </table>
     </div>
 
-    <!-- CUSTOMER ORDERS -->
+    <!-- ORDER LIST -->
     <div class="section">
-        <h2>👤 Customer Order Tracking</h2>
-        <input type="text" id="custName" placeholder="Customer Name">
-        <input type="text" id="custProd" placeholder="Product Bought">
-        <input type="number" id="custQty" placeholder="Quantity">
-        <input type="date" id="orderDate">
-        <button onclick="addCustomer()" class="btn-add">Add Order</button>
-
+        <h2>🧾 Orders From Excel</h2>
         <table>
             <thead>
                 <tr>
-                    <th>Customer</th>
-                    <th>Product</th>
-                    <th>Qty</th>
+                    <th>Order ID</th>
                     <th>Date</th>
-                    <th>Delete</th>
+                    <th>Item</th>
+                    <th>Qty</th>
+                    <th>Grand Total</th>
+                    <th>Customer</th>
                 </tr>
             </thead>
-            <tbody id="customerTable"></tbody>
+            <tbody id="orderTable"></tbody>
         </table>
     </div>
+
+    <button onclick="exportAll()" class="btn-export">📤 Export Full Report</button>
 </div>
 
 <script>
-// DATA STORAGE
-let products = JSON.parse(localStorage.getItem("final_shop_products")) || [];
-let customers = JSON.parse(localStorage.getItem("final_shop_customers")) || [];
+let products = JSON.parse(localStorage.getItem("myShopProducts")) || [];
+let orders = JSON.parse(localStorage.getItem("myShopOrders")) || [];
 let lowStockLimit = 10;
 
-// --------------------------
-// NEW EXCEL IMPORT FUNCTION
-// --------------------------
-function importExcel() {
-    const fileInput = document.getElementById("excelFile");
-    const fileStatus = document.getElementById("fileStatus");
-    
-    // Check if file is selected
-    if (!fileInput.files || fileInput.files.length === 0) {
-        fileStatus.textContent = "❌ Please select an Excel file first!";
-        fileStatus.style.color = "red";
-        return;
-    }
-
-    const file = fileInput.files[0];
+// IMAGE PREVIEW
+function previewImage(event) {
     const reader = new FileReader();
-
-    reader.onload = function(e) {
-        try {
-            // Read Excel file
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: "array" });
-            
-            // Get first sheet (your data is in the first sheet)
-            const firstSheetName = workbook.SheetNames[0];
-            const worksheet = workbook.Sheets[firstSheetName];
-            
-            // Convert sheet to JSON (matches your Excel columns)
-            const excelData = XLSX.utils.sheet_to_json(worksheet, {
-                header: ["productName", "costPrice", "sellingPrice", "totalSold", "currentStock", "adsCost", "shippingCost", "packagingCost"]
-            });
-
-            // Remove header row (first row of Excel)
-            excelData.shift();
-
-            // Add Excel data to products (merge with existing)
-            let addedCount = 0;
-            excelData.forEach(item => {
-                // Skip empty rows
-                if (!item.productName) return;
-
-                // Convert values to numbers (fix Excel text formatting)
-                const cost = parseFloat(item.costPrice) || 0;
-                const sell = parseFloat(item.sellingPrice) || 0;
-                const sold = parseInt(item.totalSold) || 0;
-                const stock = parseInt(item.currentStock) || 0;
-                const ads = parseFloat(item.adsCost) || 0;
-                const ship = parseFloat(item.shippingCost) || 0;
-                const pack = parseFloat(item.packagingCost) || 0;
-
-                // Check if product already exists (avoid duplicates)
-                const existingProductIndex = products.findIndex(p => 
-                    p.name.toLowerCase() === item.productName.toLowerCase()
-                );
-
-                if (existingProductIndex >= 0) {
-                    // Update existing product (merge data)
-                    products[existingProductIndex] = {
-                        ...products[existingProductIndex],
-                        cost: cost,
-                        sell: sell,
-                        sold: sold,
-                        stock: stock,
-                        ads: ads,
-                        ship: ship,
-                        pack: pack,
-                        date: new Date().toISOString()
-                    };
-                } else {
-                    // Add new product
-                    products.push({
-                        name: item.productName.trim(),
-                        cost: cost,
-                        sell: sell,
-                        sold: sold,
-                        stock: stock,
-                        ads: ads,
-                        ship: ship,
-                        pack: pack,
-                        date: new Date().toISOString()
-                    });
-                    addedCount++;
-                }
-            });
-
-            // Save to local storage
-            localStorage.setItem("final_shop_products", JSON.stringify(products));
-            
-            // Show success message
-            fileStatus.textContent = `✅ Success! Imported ${addedCount} new products (merged duplicates)`;
-            fileStatus.style.color = "green";
-            
-            // Refresh UI
-            renderProducts();
-            updateAll();
-            
-            // Clear file input
-            fileInput.value = "";
-
-        } catch (error) {
-            fileStatus.textContent = `❌ Error importing file: ${error.message}`;
-            fileStatus.style.color = "red";
-        }
+    reader.onload = () => {
+        const img = document.getElementById("imagePreview");
+        img.src = reader.result;
+        img.style.display = "inline-block";
     };
-
-    // Read file as array buffer
-    reader.readAsArrayBuffer(file);
+    reader.readAsDataURL(event.target.files[0]);
 }
 
-// --------------------------
-// EXISTING FUNCTIONS (UNCHANGED)
-// --------------------------
-function saveProduct(){
+// LOW STOCK ALERT
+function checkLowStock() {
+    const alertBox = document.getElementById("lowStockAlert");
+    const lowItems = products.filter(p => p.stock < lowStockLimit);
+    alertBox.style.display = lowItems.length > 0 ? "block" : "none";
+    if (lowItems.length > 0) {
+        if (Notification.permission === "granted") {
+            new Notification("Low Stock Alert!", { body: lowItems.map(i => i.name).join(", ") });
+        } else {
+            Notification.requestPermission();
+        }
+    }
+}
+
+// SAVE PRODUCT
+function saveProduct() {
     const id = document.getElementById("editId").value;
-    const name = document.getElementById("prodName").value.trim();
-    const cost = parseFloat(document.getElementById("prodCost").value) || 0;
-    const sell = parseFloat(document.getElementById("prodSell").value) || 0;
-    const stock = parseInt(document.getElementById("prodStock").value) || 0;
-    const sold = parseInt(document.getElementById("prodSold").value) || 0;
-    const ads = parseFloat(document.getElementById("adsCost").value) || 0;
-    const ship = parseFloat(document.getElementById("shipCost").value) || 0;
-    const pack = parseFloat(document.getElementById("packCost").value) || 0;
+    const img = document.getElementById("imagePreview").src || "";
 
-    if(!name) { alert("Enter product name"); return; }
-
-    const item = {
-        name,cost,sell,stock,sold,ads,ship,pack,
+    const product = {
+        name: document.getElementById("pName").value,
+        cost: parseFloat(document.getElementById("pCost").value) || 0,
+        sell: parseFloat(document.getElementById("pSell").value) || 0,
+        stock: parseInt(document.getElementById("pStock").value) || 0,
+        sold: parseInt(document.getElementById("pSold").value) || 0,
+        image: img,
+        ads: parseFloat(document.getElementById("pAds").value) || 0,
+        ship: parseFloat(document.getElementById("pShip").value) || 0,
+        pack: parseFloat(document.getElementById("pPack").value) || 0,
         date: new Date().toISOString()
     };
 
-    if(id) products[id] = item;
-    else products.push(item);
+    if (id) products[id] = product;
+    else products.push(product);
 
-    localStorage.setItem("final_shop_products", JSON.stringify(products));
+    localStorage.setItem("myShopProducts", JSON.stringify(products));
     clearForm();
     renderProducts();
-    updateAll();
+    updateDashboard();
 }
 
-function clearForm(){
-    document.getElementById("editId").value = "";
-    document.getElementById("prodName").value = "";
-    document.getElementById("prodCost").value = "";
-    document.getElementById("prodSell").value = "";
-    document.getElementById("prodStock").value = "";
-    document.getElementById("prodSold").value = "";
-    document.getElementById("adsCost").value = "0";
-    document.getElementById("shipCost").value = "0";
-    document.getElementById("packCost").value = "0";
-}
-
-function renderProducts(){
-    const tb = document.getElementById("productTable");
-    tb.innerHTML = "";
-    products.forEach((p,i) => {
-        const totalExpensePerItem = p.cost + p.ads + p.ship + p.pack;
-        const revenue = p.sell * p.sold;
-        const netProfit = (p.sell - totalExpensePerItem) * p.sold;
+// RENDER PRODUCTS
+function renderProducts() {
+    const table = document.getElementById("productTable");
+    table.innerHTML = "";
+    products.forEach((p, i) => {
+        const profit = (p.sell - p.cost - p.ads - p.ship - p.pack) * p.sold;
         const low = p.stock < lowStockLimit ? "low-stock" : "";
-
-        tb.innerHTML += `
+        table.innerHTML += `
         <tr class="${low}">
+            <td><img src="${p.image}" class="img-preview"></td>
             <td>${p.name}</td>
             <td>$${p.cost.toFixed(2)}</td>
             <td>$${p.sell.toFixed(2)}</td>
-            <td>${p.sold}</td>
             <td>${p.stock}</td>
-            <td>$${(totalExpensePerItem*p.sold).toFixed(2)}</td>
-            <td>$${revenue.toFixed(2)}</td>
-            <td>$${netProfit.toFixed(2)}</td>
+            <td>${p.sold}</td>
+            <td>$${profit.toFixed(2)}</td>
             <td>
                 <button class="btn-edit" onclick="editProduct(${i})">Edit</button>
                 <button class="btn-del" onclick="deleteProduct(${i})">Delete</button>
             </td>
         </tr>`;
     });
+    checkLowStock();
 }
 
-function editProduct(i){
+// EDIT PRODUCT
+function editProduct(i) {
     const p = products[i];
     document.getElementById("editId").value = i;
-    document.getElementById("prodName").value = p.name;
-    document.getElementById("prodCost").value = p.cost;
-    document.getElementById("prodSell").value = p.sell;
-    document.getElementById("prodStock").value = p.stock;
-    document.getElementById("prodSold").value = p.sold;
-    document.getElementById("adsCost").value = p.ads || 0;
-    document.getElementById("shipCost").value = p.ship || 0;
-    document.getElementById("packCost").value = p.pack || 0;
+    document.getElementById("pName").value = p.name;
+    document.getElementById("pCost").value = p.cost;
+    document.getElementById("pSell").value = p.sell;
+    document.getElementById("pStock").value = p.stock;
+    document.getElementById("pSold").value = p.sold;
+    document.getElementById("pAds").value = p.ads;
+    document.getElementById("pShip").value = p.ship;
+    document.getElementById("pPack").value = p.pack;
+
+    const img = document.getElementById("imagePreview");
+    img.src = p.image;
+    img.style.display = p.image ? "inline-block" : "none";
 }
 
-function deleteProduct(i){
-    if(!confirm("Delete this product?")) return;
-    products.splice(i,1);
-    localStorage.setItem("final_shop_products", JSON.stringify(products));
+// DELETE PRODUCT
+function deleteProduct(i) {
+    if (!confirm("Delete this product?")) return;
+    products.splice(i, 1);
+    localStorage.setItem("myShopProducts", JSON.stringify(products));
     renderProducts();
-    updateAll();
+    updateDashboard();
 }
 
-function updateAll(){
-    let totalStock=0, totalSold=0, totalRev=0, totalNetProfit=0, totalExpense=0;
-    let topName="-", maxSold=0;
-    let monthlyRev=0, monthlyProf=0;
-
-    const filterVal = document.getElementById("dateFilter").value;
-    const filterType = document.getElementById("filterMode").value;
-
-    products.forEach(p => {
-        const expPerItem = p.cost + p.ads + p.ship + p.pack;
-        const rev = p.sell * p.sold;
-        const np = (p.sell - expPerItem) * p.sold;
-        const expTotal = expPerItem * p.sold;
-
-        totalStock += p.stock;
-        totalSold += p.sold;
-        totalRev += rev;
-        totalNetProfit += np;
-        totalExpense += expTotal;
-
-        if(p.sold > maxSold){ maxSold = p.sold; topName = p.name; }
-
-        const d = new Date(p.date);
-        let match = true;
-        if(filterVal){
-            const f = filterVal.split("-");
-            if(filterType === "month") match = (d.getFullYear()==f[0] && d.getMonth()+1==f[1]);
-            else match = (d.getFullYear()==f[0]);
-        }
-        if(match){ monthlyRev += rev; monthlyProf += np; }
-    });
-
-    document.getElementById("totalStock").innerText = totalStock;
-    document.getElementById("totalSold").innerText = totalSold;
-    document.getElementById("totalRev").innerText = "$"+totalRev.toFixed(2);
-    document.getElementById("netProfit").innerText = "$"+totalNetProfit.toFixed(2);
-    document.getElementById("totalExpense").innerText = "$"+totalExpense.toFixed(2);
-    document.getElementById("monthlyProf").innerText = "$"+monthlyProf.toFixed(2);
-    document.getElementById("topProduct").innerText = topName;
+// CLEAR FORM
+function clearForm() {
+    document.getElementById("editId").value = "";
+    document.getElementById("pName").value = "";
+    document.getElementById("pCost").value = "";
+    document.getElementById("pSell").value = "";
+    document.getElementById("pStock").value = "";
+    document.getElementById("pSold").value = "";
+    document.getElementById("pAds").value = "0";
+    document.getElementById("pShip").value = "0";
+    document.getElementById("pPack").value = "0";
+    document.getElementById("imagePreview").style.display = "none";
+    document.getElementById("pImage").value = "";
 }
 
-function addCustomer(){
-    const c = {
-        name: document.getElementById("custName").value,
-        product: document.getElementById("custProd").value,
-        qty: document.getElementById("custQty").value,
-        date: document.getElementById("orderDate").value
+// IMPORT EXCEL (YOUR FORMAT)
+function importYourExcel() {
+    const fileInput = document.getElementById("excelFile");
+    const msg = document.getElementById("importMsg");
+    if (!fileInput.files[0]) { msg.innerHTML = "Select file first"; msg.style.color="red"; return; }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const data = new Uint8Array(e.target.result);
+        const wb = XLSX.read(data, { type: "array" });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(ws);
+        orders = json;
+        localStorage.setItem("myShopOrders", JSON.stringify(orders));
+        renderOrders();
+        msg.innerHTML = `✅ Imported ${orders.length} orders!`;
+        msg.style.color="green";
+        fileInput.value = "";
     };
-    customers.push(c);
-    localStorage.setItem("final_shop_customers", JSON.stringify(customers));
-    renderCustomers();
-    document.getElementById("custName").value = "";
-    document.getElementById("custProd").value = "";
-    document.getElementById("custQty").value = "";
+    reader.readAsArrayBuffer(fileInput.files[0]);
 }
 
-function renderCustomers(){
-    const tb = document.getElementById("customerTable");
-    tb.innerHTML = "";
-    customers.forEach((c,i) => {
-        tb.innerHTML += `
+// SHOW ORDERS
+function renderOrders() {
+    const table = document.getElementById("orderTable");
+    table.innerHTML = "";
+    orders.forEach(o => {
+        table.innerHTML += `
         <tr>
-            <td>${c.name}</td>
-            <td>${c.product}</td>
-            <td>${c.qty}</td>
-            <td>${c.date}</td>
-            <td><button class="btn-del" onclick="delCust(${i})">Delete</button></td>
+            <td>${o["Order ID"] || ""}</td>
+            <td>${o["Date"] || ""}</td>
+            <td>${o["Item Name"] || ""}</td>
+            <td>${o["Item Quantity"] || ""}</td>
+            <td>$${o["Grand Total"] || 0}</td>
+            <td>${o["Customer Name"] || ""}</td>
         </tr>`;
     });
 }
 
-function delCust(i){
-    customers.splice(i,1);
-    localStorage.setItem("final_shop_customers", JSON.stringify(customers));
-    renderCustomers();
-}
+// FULL DASHBOARD WITH ALL FEATURES YOU WANT
+function updateDashboard() {
+    let totalStock = 0, totalSold = 0, totalRev = 0, netProfit = 0, totalExp = 0;
+    let trendingProduct = "-";
+    let topSold = 0;
+    let monthlyProfit = 0;
+    const selectedMonth = document.getElementById("monthFilter").value;
 
-function exportToExcel(){
-    let csv = "Product Name,Cost,Ads,Shipping,Packaging,Total Expense,Sell Price,Sold,Revenue,NET PROFIT\n";
     products.forEach(p => {
         const exp = p.cost + p.ads + p.ship + p.pack;
         const rev = p.sell * p.sold;
-        const np = (p.sell - exp) * p.sold;
-        csv += `${p.name},${p.cost},${p.ads},${p.ship},${p.pack},${(exp*p.sold).toFixed(2)},${p.sell},${p.sold},${rev.toFixed(2)},${np.toFixed(2)}\n`;
+        const prof = (p.sell - exp) * p.sold;
+        const totalExpPerProduct = exp * p.sold;
+
+        totalStock += p.stock;
+        totalSold += p.sold;
+        totalRev += rev;
+        netProfit += prof;
+        totalExp += totalExpPerProduct;
+
+        // TRENDING PRODUCT
+        if (p.sold > topSold) {
+            topSold = p.sold;
+            trendingProduct = p.name;
+        }
+
+        // MONTHLY PROFIT FILTER
+        if (selectedMonth) {
+            const d = new Date(p.date);
+            const m = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, '0');
+            if (m === selectedMonth) monthlyProfit += prof;
+        }
     });
-    const blob = new Blob([csv], {type:"text/csv"});
-    const url = URL.createObjectURL(blob);
+
+    document.getElementById("totalProducts").innerText = products.length;
+    document.getElementById("totalStock").innerText = totalStock;
+    document.getElementById("totalSold").innerText = totalSold;
+    document.getElementById("totalRev").innerText = "$" + totalRev.toFixed(2);
+    document.getElementById("totalExp").innerText = "$" + totalExp.toFixed(2);
+    document.getElementById("netProfit").innerText = "$" + netProfit.toFixed(2);
+    document.getElementById("monthlyProfit").innerText = "$" + monthlyProfit.toFixed(2);
+    document.getElementById("trending").innerText = trendingProduct;
+    document.getElementById("totalOrders").innerText = orders.length;
+}
+
+// EXPORT
+function exportAll() {
+    let csv = "Product,Cost,Sell,Stock,Sold,Revenue,Expenses,Net Profit\n";
+    products.forEach(p => {
+        const exp = p.cost + p.ads + p.ship + p.pack;
+        const prof = (p.sell - exp) * p.sold;
+        csv += `${p.name},${p.cost},${p.sell},${p.stock},${p.sold},${p.sell*p.sold},${exp*p.sold},${prof}\n`;
+    });
+    const blob = new Blob([csv], { type: "text/csv" });
     const a = document.createElement("a");
-    a.href = url;
-    a.download = "Ecommerce_Full_Report.csv";
+    a.href = URL.createObjectURL(blob);
+    a.download = "MyShop_Full_Report.csv";
     a.click();
 }
 
-// LOAD INITIAL DATA
-window.onload = () => { renderProducts(); renderCustomers(); updateAll(); };
+// LOAD
+window.onload = () => { renderProducts(); renderOrders(); updateDashboard(); };
 </script>
 </body>
 </html>
