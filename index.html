@@ -57,8 +57,71 @@
         <button onclick="importYourExcel()" class="btn-import">Import Excel Data</button>
         <p id="importMsg"></p>
     </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALL-IN-ONE BUSINESS MANAGER | Stock + Invoice + Orders + Profit</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif;}
+        body{background:#f4f4f4;padding:20px;}
+        .container{max-width:1400px;margin:auto;background:white;padding:30px;border-radius:12px;box-shadow:0 0 10px #00000010;}
+        h1,h2,h3{margin-bottom:15px;color:#222;}
+        .section{margin:40px 0;}
 
-    <!-- DASHBOARD (ALL METRICS YOU NEED) -->
+        .dashboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:15px;margin-bottom:25px;}
+        .card{padding:20px;border-radius:10px;color:white;}
+        .blue{background:#2563eb;}
+        .green{background:#16a34a;}
+        .orange{background:#f97316;}
+        .red{background:#ef4444;}
+        .purple{background:#a855f7;}
+        .teal{background:#0d9488;}
+        .pink{background:#ec4899;}
+        .card h4{font-size:14px;opacity:0.9;}
+        .card p{font-size:20px;font-weight:bold;margin-top:5px;}
+
+        input,select,button{padding:10px;margin:5px;border-radius:6px;border:1px solid #ddd;}
+        button{cursor:pointer;border:none;font-weight:bold;}
+        .btn-add{background:#16a34a;color:white;}
+        .btn-import{background:#ea580c;color:white;}
+        .btn-export{background:#7c3aed;color:white;}
+        .btn-edit{background:#2563eb;color:white;}
+        .btn-del{background:#dc2626;color:white;}
+        .btn-print{background:#0284c7;color:white;}
+
+        table{width:100%;border-collapse:collapse;margin-top:15px;background:white;}
+        th,td{padding:12px;text-align:left;border-bottom:1px solid #eee;}
+        th{background:#f8fafc;}
+        .low-stock{background:#fee2e2 !important; border-left:4px solid red;}
+        .img-preview{width:50px;height:50px;object-fit:cover;border-radius:6px;}
+
+        .import-box{border:2px dashed #ccc;padding:20px;border-radius:10px;margin:20px 0;background:#fafafa;}
+        .image-box{margin:10px 0;}
+        .notification{color:red;font-weight:bold;background:#ffefef;padding:10px;border-radius:6px;margin:10px 0;display:none;}
+
+        /* INVOICE STYLES */
+        #invoice{background:white;padding:30px;border:2px solid #ddd;margin:20px 0;display:none;}
+        .invoice-header{display:flex;justify-content:space-between;margin-bottom:30px;}
+        .invoice-table{width:100%;border-collapse:collapse;margin:20px 0;}
+        .invoice-table th,.invoice-table td{border:1px solid #ddd;padding:10px;}
+        .inv-img{width:80px;height:80px;object-fit:cover;}
+        @media print{
+            body *{visibility:hidden;}
+            #invoice, #invoice *{visibility:visible;}
+            #invoice{position:absolute;left:0;top:0;width:100%;}
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <h1>🏪 ALL-IN-ONE BUSINESS MANAGEMENT SYSTEM</h1>
+    <div id="lowStockAlert" class="notification">⚠️ LOW STOCK WARNING!</div>
+
+    <!-- DASHBOARD -->
     <div class="dashboard">
         <div class="card blue"><h4>Total Products</h4><p id="totalProducts">0</p></div>
         <div class="card green"><h4>Total Stock Left</h4><p id="totalStock">0</p></div>
@@ -70,78 +133,83 @@
         <div class="card blue"><h4>TRENDING PRODUCT</h4><p id="trending" style="font-size:15px;">-</p></div>
     </div>
 
-    <div style="margin:10px 0;">
-        <input type="month" id="monthFilter" onchange="updateDashboard()">
-        <button onclick="updateDashboard()" class="btn-add">Refresh Monthly Profit</button>
+    <!-- CREATE ORDER + INVOICE -->
+    <div class="section">
+        <h2>🛒 CREATE NEW ORDER (AUTO DEDUCT STOCK)</h2>
+        <select id="orderProduct"></select>
+        <input type="number" id="orderQty" placeholder="Quantity" min="1" value="1">
+        <input type="text" id="custName" placeholder="Customer Name">
+        <input type="text" id="custPhone" placeholder="Customer Phone">
+        <input type="text" id="custAddress" placeholder="Customer Address">
+        <button onclick="createOrder()" class="btn-add">Create Order & Invoice</button>
+        <button onclick="printInvoice()" class="btn-print">Print Invoice</button>
     </div>
 
-    <!-- ADD PRODUCT WITH IMAGE -->
+    <!-- INVOICE -->
+    <div id="invoice">
+        <div class="invoice-header">
+            <div>
+                <h2>TAX INVOICE</h2>
+                <p><strong>Your Business Name</strong></p>
+                <p>Your Address | Your Phone | Your Email</p>
+            </div>
+            <div>
+                <p id="invDate"></p>
+                <p>Invoice #: <span id="invId"></span></p>
+            </div>
+        </div>
+
+        <div>
+            <p><strong>Customer:</strong> <span id="invCustName"></span></p>
+            <p><strong>Phone:</strong> <span id="invCustPhone"></span></p>
+            <p><strong>Address:</strong> <span id="invCustAddress"></span></p>
+        </div>
+
+        <table class="invoice-table">
+            <thead>
+                <tr>
+                    <th>Image</th>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Qty</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody id="invBody"></tbody>
+        </table>
+
+        <h3>Grand Total: $<span id="invTotal"></span></h3>
+    </div>
+
+    <!-- ADD PRODUCT -->
     <div class="section">
-        <h2>📦 Add Product + Upload Image</h2>
+        <h2>📦 Add Product + Image</h2>
         <input type="hidden" id="editId">
         <input type="text" id="pName" placeholder="Product Name" required>
         <input type="number" id="pCost" placeholder="Cost Price">
         <input type="number" id="pSell" placeholder="Selling Price">
         <input type="number" id="pStock" placeholder="Stock">
-        <input type="number" id="pSold" placeholder="Sold">
-
         <div class="image-box">
             <input type="file" id="pImage" accept="image/*" onchange="previewImage(event)">
             <img id="imagePreview" class="img-preview" style="display:none;">
         </div>
-
         <input type="number" id="pAds" placeholder="Ads Cost" value="0">
         <input type="number" id="pShip" placeholder="Shipping Cost" value="0">
-        <input type="number" id="pPack" placeholder="Packaging Cost" value="0">
-
         <button onclick="saveProduct()" class="btn-add">Save Product</button>
-        <button onclick="clearForm()" class="btn-del">Clear</button>
     </div>
 
-    <!-- PRODUCT LIST -->
+    <!-- PRODUCTS -->
     <div class="section">
-        <h2>📋 Product Stock (RED = LOW STOCK)</h2>
+        <h2>📋 Product Stock</h2>
         <table>
-            <thead>
-                <tr>
-                    <th>Image</th>
-                    <th>Product</th>
-                    <th>Cost</th>
-                    <th>Sell</th>
-                    <th>Stock</th>
-                    <th>Sold</th>
-                    <th>Profit</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
+            <thead><tr><th>Image</th><th>Product</th><th>Stock</th><th>Sold</th><th>Profit</th><th>Actions</th></tr></thead>
             <tbody id="productTable"></tbody>
         </table>
     </div>
-
-    <!-- ORDER LIST -->
-    <div class="section">
-        <h2>🧾 Orders From Excel</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Order ID</th>
-                    <th>Date</th>
-                    <th>Item</th>
-                    <th>Qty</th>
-                    <th>Grand Total</th>
-                    <th>Customer</th>
-                </tr>
-            </thead>
-            <tbody id="orderTable"></tbody>
-        </table>
-    </div>
-
-    <button onclick="exportAll()" class="btn-export">📤 Export Full Report</button>
 </div>
 
 <script>
 let products = JSON.parse(localStorage.getItem("myShopProducts")) || [];
-let orders = JSON.parse(localStorage.getItem("myShopOrders")) || [];
 let lowStockLimit = 10;
 
 // IMAGE PREVIEW
@@ -155,215 +223,137 @@ function previewImage(event) {
     reader.readAsDataURL(event.target.files[0]);
 }
 
-// LOW STOCK ALERT
-function checkLowStock() {
-    const alertBox = document.getElementById("lowStockAlert");
-    const lowItems = products.filter(p => p.stock < lowStockLimit);
-    alertBox.style.display = lowItems.length > 0 ? "block" : "none";
-    if (lowItems.length > 0) {
-        if (Notification.permission === "granted") {
-            new Notification("Low Stock Alert!", { body: lowItems.map(i => i.name).join(", ") });
-        } else {
-            Notification.requestPermission();
-        }
-    }
-}
-
 // SAVE PRODUCT
 function saveProduct() {
     const id = document.getElementById("editId").value;
     const img = document.getElementById("imagePreview").src || "";
-
     const product = {
         name: document.getElementById("pName").value,
-        cost: parseFloat(document.getElementById("pCost").value) || 0,
-        sell: parseFloat(document.getElementById("pSell").value) || 0,
-        stock: parseInt(document.getElementById("pStock").value) || 0,
-        sold: parseInt(document.getElementById("pSold").value) || 0,
-        image: img,
-        ads: parseFloat(document.getElementById("pAds").value) || 0,
-        ship: parseFloat(document.getElementById("pShip").value) || 0,
-        pack: parseFloat(document.getElementById("pPack").value) || 0,
+        cost: parseFloat(document.getElementById("pCost").value)||0,
+        sell: parseFloat(document.getElementById("pSell").value)||0,
+        stock: parseInt(document.getElementById("pStock").value)||0,
+        sold: 0, image: img,
+        ads: parseFloat(document.getElementById("pAds").value)||0,
+        ship: parseFloat(document.getElementById("pShip").value)||0,
         date: new Date().toISOString()
     };
-
-    if (id) products[id] = product;
-    else products.push(product);
-
+    id ? products[id] = product : products.push(product);
     localStorage.setItem("myShopProducts", JSON.stringify(products));
-    clearForm();
-    renderProducts();
-    updateDashboard();
+    clearForm(); renderProducts(); updateDashboard(); loadProductList();
 }
 
 // RENDER PRODUCTS
 function renderProducts() {
-    const table = document.getElementById("productTable");
-    table.innerHTML = "";
-    products.forEach((p, i) => {
-        const profit = (p.sell - p.cost - p.ads - p.ship - p.pack) * p.sold;
+    const t = document.getElementById("productTable"); t.innerHTML = "";
+    products.forEach((p,i)=>{
+        const prof = (p.sell-p.cost-p.ads-p.ship)*p.sold;
         const low = p.stock < lowStockLimit ? "low-stock" : "";
-        table.innerHTML += `
+        t.innerHTML += `
         <tr class="${low}">
             <td><img src="${p.image}" class="img-preview"></td>
             <td>${p.name}</td>
-            <td>$${p.cost.toFixed(2)}</td>
-            <td>$${p.sell.toFixed(2)}</td>
             <td>${p.stock}</td>
             <td>${p.sold}</td>
-            <td>$${profit.toFixed(2)}</td>
+            <td>$${prof.toFixed(2)}</td>
             <td>
                 <button class="btn-edit" onclick="editProduct(${i})">Edit</button>
-                <button class="btn-del" onclick="deleteProduct(${i})">Delete</button>
             </td>
         </tr>`;
     });
     checkLowStock();
 }
 
-// EDIT PRODUCT
-function editProduct(i) {
-    const p = products[i];
-    document.getElementById("editId").value = i;
-    document.getElementById("pName").value = p.name;
-    document.getElementById("pCost").value = p.cost;
-    document.getElementById("pSell").value = p.sell;
-    document.getElementById("pStock").value = p.stock;
-    document.getElementById("pSold").value = p.sold;
-    document.getElementById("pAds").value = p.ads;
-    document.getElementById("pShip").value = p.ship;
-    document.getElementById("pPack").value = p.pack;
-
-    const img = document.getElementById("imagePreview");
-    img.src = p.image;
-    img.style.display = p.image ? "inline-block" : "none";
+// LOAD PRODUCTS FOR ORDER
+function loadProductList() {
+    const sel = document.getElementById("orderProduct"); sel.innerHTML = "";
+    products.forEach((p,i)=>sel.innerHTML+=`<option value="${i}">${p.name} ($${p.sell})</option>`);
 }
 
-// DELETE PRODUCT
-function deleteProduct(i) {
-    if (!confirm("Delete this product?")) return;
-    products.splice(i, 1);
+// CREATE ORDER + AUTO DEDUCT STOCK
+function createOrder() {
+    const pIndex = document.getElementById("orderProduct").value;
+    const qty = parseInt(document.getElementById("orderQty").value);
+    const p = products[pIndex];
+    if(!p || p.stock < qty){alert("Not enough stock!");return;}
+
+    // AUTO DEDUCT STOCK
+    p.stock -= qty;
+    p.sold += qty;
     localStorage.setItem("myShopProducts", JSON.stringify(products));
-    renderProducts();
-    updateDashboard();
+
+    // SHOW INVOICE
+    document.getElementById("invoice").style.display = "block";
+    document.getElementById("invId").innerText = Math.floor(Math.random()*1000000);
+    document.getElementById("invDate").innerText = new Date().toLocaleDateString();
+    document.getElementById("invCustName").innerText = document.getElementById("custName").value;
+    document.getElementById("invCustPhone").innerText = document.getElementById("custPhone").value;
+    document.getElementById("invCustAddress").innerText = document.getElementById("custAddress").value;
+    document.getElementById("invBody").innerHTML = `
+    <tr>
+        <td><img src="${p.image}" class="inv-img"></td>
+        <td>${p.name}</td>
+        <td>$${p.sell.toFixed(2)}</td>
+        <td>${qty}</td>
+        <td>$${(p.sell*qty).toFixed(2)}</td>
+    </tr>`;
+    document.getElementById("invTotal").innerText = (p.sell*qty).toFixed(2);
+
+    renderProducts(); updateDashboard();
+}
+
+// PRINT INVOICE
+function printInvoice() {
+    window.print();
 }
 
 // CLEAR FORM
 function clearForm() {
-    document.getElementById("editId").value = "";
-    document.getElementById("pName").value = "";
-    document.getElementById("pCost").value = "";
-    document.getElementById("pSell").value = "";
-    document.getElementById("pStock").value = "";
-    document.getElementById("pSold").value = "";
-    document.getElementById("pAds").value = "0";
-    document.getElementById("pShip").value = "0";
-    document.getElementById("pPack").value = "0";
-    document.getElementById("imagePreview").style.display = "none";
-    document.getElementById("pImage").value = "";
+    document.getElementById("editId").value="";
+    document.getElementById("pName").value="";
+    document.getElementById("pCost").value="";
+    document.getElementById("pSell").value="";
+    document.getElementById("pStock").value="";
+    document.getElementById("imagePreview").style.display="none";
 }
 
-// IMPORT EXCEL (YOUR FORMAT)
-function importYourExcel() {
-    const fileInput = document.getElementById("excelFile");
-    const msg = document.getElementById("importMsg");
-    if (!fileInput.files[0]) { msg.innerHTML = "Select file first"; msg.style.color="red"; return; }
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        const data = new Uint8Array(e.target.result);
-        const wb = XLSX.read(data, { type: "array" });
-        const ws = wb.Sheets[wb.SheetNames[0]];
-        const json = XLSX.utils.sheet_to_json(ws);
-        orders = json;
-        localStorage.setItem("myShopOrders", JSON.stringify(orders));
-        renderOrders();
-        msg.innerHTML = `✅ Imported ${orders.length} orders!`;
-        msg.style.color="green";
-        fileInput.value = "";
-    };
-    reader.readAsArrayBuffer(fileInput.files[0]);
+// EDIT PRODUCT
+function editProduct(i) {
+    const p=products[i];
+    document.getElementById("editId").value=i;
+    document.getElementById("pName").value=p.name;
+    document.getElementById("pCost").value=p.cost;
+    document.getElementById("pSell").value=p.sell;
+    document.getElementById("pStock").value=p.stock;
+    document.getElementById("imagePreview").src=p.image;
+    document.getElementById("imagePreview").style.display="inline-block";
 }
 
-// SHOW ORDERS
-function renderOrders() {
-    const table = document.getElementById("orderTable");
-    table.innerHTML = "";
-    orders.forEach(o => {
-        table.innerHTML += `
-        <tr>
-            <td>${o["Order ID"] || ""}</td>
-            <td>${o["Date"] || ""}</td>
-            <td>${o["Item Name"] || ""}</td>
-            <td>${o["Item Quantity"] || ""}</td>
-            <td>$${o["Grand Total"] || 0}</td>
-            <td>${o["Customer Name"] || ""}</td>
-        </tr>`;
-    });
+// LOW STOCK
+function checkLowStock() {
+    const a = document.getElementById("lowStockAlert");
+    a.style.display = products.filter(p=>p.stock<lowStockLimit).length>0?"block":"none";
 }
 
-// FULL DASHBOARD WITH ALL FEATURES YOU WANT
+// DASHBOARD
 function updateDashboard() {
-    let totalStock = 0, totalSold = 0, totalRev = 0, netProfit = 0, totalExp = 0;
-    let trendingProduct = "-";
-    let topSold = 0;
-    let monthlyProfit = 0;
-    const selectedMonth = document.getElementById("monthFilter").value;
-
-    products.forEach(p => {
-        const exp = p.cost + p.ads + p.ship + p.pack;
-        const rev = p.sell * p.sold;
-        const prof = (p.sell - exp) * p.sold;
-        const totalExpPerProduct = exp * p.sold;
-
-        totalStock += p.stock;
-        totalSold += p.sold;
-        totalRev += rev;
-        netProfit += prof;
-        totalExp += totalExpPerProduct;
-
-        // TRENDING PRODUCT
-        if (p.sold > topSold) {
-            topSold = p.sold;
-            trendingProduct = p.name;
-        }
-
-        // MONTHLY PROFIT FILTER
-        if (selectedMonth) {
-            const d = new Date(p.date);
-            const m = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, '0');
-            if (m === selectedMonth) monthlyProfit += prof;
-        }
+    let totalStock=0,totalSold=0,totalRev=0,netProfit=0,totalExp=0,top="-",topS=0;
+    products.forEach(p=>{
+        const exp = p.cost+p.ads+p.ship;
+        totalStock+=p.stock; totalSold+=p.sold;
+        totalRev+=p.sell*p.sold; netProfit+=(p.sell-exp)*p.sold;
+        totalExp+=exp*p.sold;
+        if(p.sold>topS){topS=p.sold;top=p.name;}
     });
-
-    document.getElementById("totalProducts").innerText = products.length;
-    document.getElementById("totalStock").innerText = totalStock;
-    document.getElementById("totalSold").innerText = totalSold;
-    document.getElementById("totalRev").innerText = "$" + totalRev.toFixed(2);
-    document.getElementById("totalExp").innerText = "$" + totalExp.toFixed(2);
-    document.getElementById("netProfit").innerText = "$" + netProfit.toFixed(2);
-    document.getElementById("monthlyProfit").innerText = "$" + monthlyProfit.toFixed(2);
-    document.getElementById("trending").innerText = trendingProduct;
-    document.getElementById("totalOrders").innerText = orders.length;
+    document.getElementById("totalProducts").innerText=products.length;
+    document.getElementById("totalStock").innerText=totalStock;
+    document.getElementById("totalSold").innerText=totalSold;
+    document.getElementById("totalRev").innerText="$"+totalRev.toFixed(2);
+    document.getElementById("totalExp").innerText="$"+totalExp.toFixed(2);
+    document.getElementById("netProfit").innerText="$"+netProfit.toFixed(2);
+    document.getElementById("trending").innerText=top;
 }
 
-// EXPORT
-function exportAll() {
-    let csv = "Product,Cost,Sell,Stock,Sold,Revenue,Expenses,Net Profit\n";
-    products.forEach(p => {
-        const exp = p.cost + p.ads + p.ship + p.pack;
-        const prof = (p.sell - exp) * p.sold;
-        csv += `${p.name},${p.cost},${p.sell},${p.stock},${p.sold},${p.sell*p.sold},${exp*p.sold},${prof}\n`;
-    });
-    const blob = new Blob([csv], { type: "text/csv" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "MyShop_Full_Report.csv";
-    a.click();
-}
-
-// LOAD
-window.onload = () => { renderProducts(); renderOrders(); updateDashboard(); };
+window.onload=()=>{renderProducts();updateDashboard();loadProductList();};
 </script>
 </body>
 </html>
