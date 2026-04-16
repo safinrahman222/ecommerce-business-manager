@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cuir Elegante E-Commerce Business Manager</title>
+    <title>Cuir Elegante E-Commerce Manager </title>
     <style>
         *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
         body{background:#f0f2f5;padding:20px;}
@@ -29,20 +29,34 @@
         .btn-edit{background:#2563eb;color:white;}
         .btn-del{background:#dc2626;color:white;}
         .btn-export{background:#8b5cf6;color:white;}
+        .btn-import{background:#e64a19;color:white;}
 
         table{width:100%;border-collapse:collapse;margin-top:15px;}
         th,td{padding:12px;text-align:left;border-bottom:1px solid #eee;}
-        th{background:#f8f9fa;}
+        th{background:#f8fafc;}
         .low-stock{background:#fee2e2 !important;}
 
         .filter-bar{margin:20px 0;}
         .expense-box{background:#f8fafc;padding:15px;border-radius:8px;margin:10px 0;}
+        .import-box{margin:20px 0;padding:15px;border:2px dashed #ddd;border-radius:8px;}
+        #fileStatus{margin:10px 0;color:green;font-weight:bold;}
     </style>
+    <!-- Add Excel reading library (required for import) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
 <div class="container">
-    <h1>🛍️ Cuir Elegante E-COMMERCE MANAGER</h1>
+    <h1>🛍️ Cuir Elegante E-COMMERCE MANAGER </h1>
+
+    <!-- NEW EXCEL IMPORT SECTION -->
+    <div class="import-box">
+        <h2>📥 Import Excel Data (e.g., March Orders)</h2>
+        <p>Upload your Excel file (XLS/XLSX) — system will auto-add all products</p>
+        <input type="file" id="excelFile" accept=".xls,.xlsx" style="margin:10px 0;">
+        <button onclick="importExcel()" class="btn-import">Import Excel Data</button>
+        <div id="fileStatus"></div> <!-- Shows success/error message -->
+    </div>
 
     <!-- DASHBOARD -->
     <div class="dashboard">
@@ -138,7 +152,118 @@ let products = JSON.parse(localStorage.getItem("final_shop_products")) || [];
 let customers = JSON.parse(localStorage.getItem("final_shop_customers")) || [];
 let lowStockLimit = 10;
 
-// SAVE PRODUCT
+// --------------------------
+// NEW EXCEL IMPORT FUNCTION
+// --------------------------
+function importExcel() {
+    const fileInput = document.getElementById("excelFile");
+    const fileStatus = document.getElementById("fileStatus");
+    
+    // Check if file is selected
+    if (!fileInput.files || fileInput.files.length === 0) {
+        fileStatus.textContent = "❌ Please select an Excel file first!";
+        fileStatus.style.color = "red";
+        return;
+    }
+
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+        try {
+            // Read Excel file
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: "array" });
+            
+            // Get first sheet (your data is in the first sheet)
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            
+            // Convert sheet to JSON (matches your Excel columns)
+            const excelData = XLSX.utils.sheet_to_json(worksheet, {
+                header: ["productName", "costPrice", "sellingPrice", "totalSold", "currentStock", "adsCost", "shippingCost", "packagingCost"]
+            });
+
+            // Remove header row (first row of Excel)
+            excelData.shift();
+
+            // Add Excel data to products (merge with existing)
+            let addedCount = 0;
+            excelData.forEach(item => {
+                // Skip empty rows
+                if (!item.productName) return;
+
+                // Convert values to numbers (fix Excel text formatting)
+                const cost = parseFloat(item.costPrice) || 0;
+                const sell = parseFloat(item.sellingPrice) || 0;
+                const sold = parseInt(item.totalSold) || 0;
+                const stock = parseInt(item.currentStock) || 0;
+                const ads = parseFloat(item.adsCost) || 0;
+                const ship = parseFloat(item.shippingCost) || 0;
+                const pack = parseFloat(item.packagingCost) || 0;
+
+                // Check if product already exists (avoid duplicates)
+                const existingProductIndex = products.findIndex(p => 
+                    p.name.toLowerCase() === item.productName.toLowerCase()
+                );
+
+                if (existingProductIndex >= 0) {
+                    // Update existing product (merge data)
+                    products[existingProductIndex] = {
+                        ...products[existingProductIndex],
+                        cost: cost,
+                        sell: sell,
+                        sold: sold,
+                        stock: stock,
+                        ads: ads,
+                        ship: ship,
+                        pack: pack,
+                        date: new Date().toISOString()
+                    };
+                } else {
+                    // Add new product
+                    products.push({
+                        name: item.productName.trim(),
+                        cost: cost,
+                        sell: sell,
+                        sold: sold,
+                        stock: stock,
+                        ads: ads,
+                        ship: ship,
+                        pack: pack,
+                        date: new Date().toISOString()
+                    });
+                    addedCount++;
+                }
+            });
+
+            // Save to local storage
+            localStorage.setItem("final_shop_products", JSON.stringify(products));
+            
+            // Show success message
+            fileStatus.textContent = `✅ Success! Imported ${addedCount} new products (merged duplicates)`;
+            fileStatus.style.color = "green";
+            
+            // Refresh UI
+            renderProducts();
+            updateAll();
+            
+            // Clear file input
+            fileInput.value = "";
+
+        } catch (error) {
+            fileStatus.textContent = `❌ Error importing file: ${error.message}`;
+            fileStatus.style.color = "red";
+        }
+    };
+
+    // Read file as array buffer
+    reader.readAsArrayBuffer(file);
+}
+
+// --------------------------
+// EXISTING FUNCTIONS (UNCHANGED)
+// --------------------------
 function saveProduct(){
     const id = document.getElementById("editId").value;
     const name = document.getElementById("prodName").value.trim();
@@ -166,7 +291,6 @@ function saveProduct(){
     updateAll();
 }
 
-// CLEAR FORM
 function clearForm(){
     document.getElementById("editId").value = "";
     document.getElementById("prodName").value = "";
@@ -179,7 +303,6 @@ function clearForm(){
     document.getElementById("packCost").value = "0";
 }
 
-// RENDER PRODUCTS
 function renderProducts(){
     const tb = document.getElementById("productTable");
     tb.innerHTML = "";
@@ -207,7 +330,6 @@ function renderProducts(){
     });
 }
 
-// EDIT
 function editProduct(i){
     const p = products[i];
     document.getElementById("editId").value = i;
@@ -221,7 +343,6 @@ function editProduct(i){
     document.getElementById("packCost").value = p.pack || 0;
 }
 
-// DELETE
 function deleteProduct(i){
     if(!confirm("Delete this product?")) return;
     products.splice(i,1);
@@ -230,7 +351,6 @@ function deleteProduct(i){
     updateAll();
 }
 
-// DASHBOARD
 function updateAll(){
     let totalStock=0, totalSold=0, totalRev=0, totalNetProfit=0, totalExpense=0;
     let topName="-", maxSold=0;
@@ -272,7 +392,6 @@ function updateAll(){
     document.getElementById("topProduct").innerText = topName;
 }
 
-// CUSTOMERS
 function addCustomer(){
     const c = {
         name: document.getElementById("custName").value,
@@ -309,7 +428,6 @@ function delCust(i){
     renderCustomers();
 }
 
-// EXPORT
 function exportToExcel(){
     let csv = "Product Name,Cost,Ads,Shipping,Packaging,Total Expense,Sell Price,Sold,Revenue,NET PROFIT\n";
     products.forEach(p => {
@@ -326,7 +444,7 @@ function exportToExcel(){
     a.click();
 }
 
-// LOAD
+// LOAD INITIAL DATA
 window.onload = () => { renderProducts(); renderCustomers(); updateAll(); };
 </script>
 </body>
