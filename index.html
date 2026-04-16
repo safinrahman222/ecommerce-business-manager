@@ -3,65 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My E-Commerce Manager (FULL VERSION)</title>
-    <style>
-        *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif;}
-        body{background:#f4f4f4;padding:20px;}
-        .container{max-width:1400px;margin:auto;background:white;padding:30px;border-radius:12px;box-shadow:0 0 10px #00000010;}
-        h1,h2,h3{margin-bottom:15px;color:#222;}
-        .section{margin:40px 0;}
-
-        .dashboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:15px;margin-bottom:25px;}
-        .card{padding:20px;border-radius:10px;color:white;}
-        .blue{background:#2563eb;}
-        .green{background:#16a34a;}
-        .orange{background:#f97316;}
-        .red{background:#ef4444;}
-        .purple{background:#a855f7;}
-        .teal{background:#0d9488;}
-        .pink{background:#ec4899;}
-        .card h4{font-size:14px;opacity:0.9;}
-        .card p{font-size:20px;font-weight:bold;margin-top:5px;}
-
-        input,select,button{padding:10px;margin:5px;border-radius:6px;border:1px solid #ddd;}
-        button{cursor:pointer;border:none;font-weight:bold;}
-        .btn-add{background:#16a34a;color:white;}
-        .btn-import{background:#ea580c;color:white;}
-        .btn-export{background:#7c3aed;color:white;}
-        .btn-edit{background:#2563eb;color:white;}
-        .btn-del{background:#dc2626;color:white;}
-
-        table{width:100%;border-collapse:collapse;margin-top:15px;background:white;}
-        th,td{padding:12px;text-align:left;border-bottom:1px solid #eee;}
-        th{background:#f8fafc;}
-        .low-stock{background:#fee2e2 !important; border-left:4px solid red;}
-        .img-preview{width:50px;height:50px;object-fit:cover;border-radius:6px;}
-
-        .import-box{border:2px dashed #ccc;padding:20px;border-radius:10px;margin:20px 0;background:#fafafa;}
-        .image-box{margin:10px 0;}
-        .notification{color:red;font-weight:bold;background:#ffefef;padding:10px;border-radius:6px;margin:10px 0;display:none;}
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-</head>
-<body>
-
-<div class="container">
-    <h1>🛒 MY E-COMMERCE MANAGEMENT SYSTEM</h1>
-    <div id="lowStockAlert" class="notification">⚠️ LOW STOCK WARNING!</div>
-
-    <!-- EXCEL IMPORT (YOUR EXACT FORMAT) -->
-    <div class="import-box">
-        <h2>📥 Import YOUR Excel Orders</h2>
-        <p>Columns: Order ID | Date | Order Type | Order Status | Item Name | Item Price | Item Quantity | Item Warranty | Delivery Zone | Total Amount | Delivery Charge | Discount Amount(Percentage) | Vat Amount (Percentage) | Grand Total | Paid Amount | Due Amount | Customer Name | Customer Number | Email | Address | Customer Note | Custom Fields | Variants</p>
-        <input type="file" id="excelFile" accept=".xls,.xlsx">
-        <button onclick="importYourExcel()" class="btn-import">Import Excel Data</button>
-        <p id="importMsg"></p>
-    </div>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ALL-IN-ONE BUSINESS MANAGER | Stock + Invoice + Orders + Profit</title>
     <style>
         *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif;}
@@ -121,6 +62,15 @@
     <h1>🏪 ALL-IN-ONE BUSINESS MANAGEMENT SYSTEM</h1>
     <div id="lowStockAlert" class="notification">⚠️ LOW STOCK WARNING!</div>
 
+    <!-- EXCEL IMPORT (YOUR FULL EXACT COLUMN FORMAT) -->
+    <div class="import-box">
+        <h2>📥 IMPORT EXCEL ORDERS (YOUR FORMAT)</h2>
+        <p>Columns: Order ID | Date | Type | Status | Item Name | Price | Qty | Warranty | Zone | Total | Delivery Charge | Discount % | VAT % | Grand Total | Paid | Due | Customer Name | Number | Email | Address | Note | Fields | Variants</p>
+        <input type="file" id="excelFile" accept=".xls,.xlsx">
+        <button onclick="importExcel()" class="btn-import">Import Excel</button>
+        <p id="importStatus"></p>
+    </div>
+
     <!-- DASHBOARD -->
     <div class="dashboard">
         <div class="card blue"><h4>Total Products</h4><p id="totalProducts">0</p></div>
@@ -133,6 +83,12 @@
         <div class="card blue"><h4>TRENDING PRODUCT</h4><p id="trending" style="font-size:15px;">-</p></div>
     </div>
 
+    <!-- MONTH FILTER -->
+    <div>
+        <input type="month" id="monthFilter">
+        <button onclick="updateDashboard()" class="btn-add">Apply Month Filter</button>
+    </div>
+
     <!-- CREATE ORDER + INVOICE -->
     <div class="section">
         <h2>🛒 CREATE NEW ORDER (AUTO DEDUCT STOCK)</h2>
@@ -140,6 +96,7 @@
         <input type="number" id="orderQty" placeholder="Quantity" min="1" value="1">
         <input type="text" id="custName" placeholder="Customer Name">
         <input type="text" id="custPhone" placeholder="Customer Phone">
+        <input type="text" id="custEmail" placeholder="Customer Email">
         <input type="text" id="custAddress" placeholder="Customer Address">
         <button onclick="createOrder()" class="btn-add">Create Order & Invoice</button>
         <button onclick="printInvoice()" class="btn-print">Print Invoice</button>
@@ -150,7 +107,7 @@
         <div class="invoice-header">
             <div>
                 <h2>TAX INVOICE</h2>
-                <p><strong>Your Business Name</strong></p>
+                <p><strong>YOUR BUSINESS NAME</strong></p>
                 <p>Your Address | Your Phone | Your Email</p>
             </div>
             <div>
@@ -158,13 +115,12 @@
                 <p>Invoice #: <span id="invId"></span></p>
             </div>
         </div>
-
         <div>
             <p><strong>Customer:</strong> <span id="invCustName"></span></p>
             <p><strong>Phone:</strong> <span id="invCustPhone"></span></p>
+            <p><strong>Email:</strong> <span id="invCustEmail"></span></p>
             <p><strong>Address:</strong> <span id="invCustAddress"></span></p>
         </div>
-
         <table class="invoice-table">
             <thead>
                 <tr>
@@ -177,7 +133,6 @@
             </thead>
             <tbody id="invBody"></tbody>
         </table>
-
         <h3>Grand Total: $<span id="invTotal"></span></h3>
     </div>
 
@@ -195,21 +150,39 @@
         </div>
         <input type="number" id="pAds" placeholder="Ads Cost" value="0">
         <input type="number" id="pShip" placeholder="Shipping Cost" value="0">
+        <input type="number" id="pPack" placeholder="Packaging Cost" value="0">
         <button onclick="saveProduct()" class="btn-add">Save Product</button>
+        <button onclick="clearForm()" class="btn-del">Clear</button>
     </div>
 
     <!-- PRODUCTS -->
     <div class="section">
-        <h2>📋 Product Stock</h2>
+        <h2>📋 Product Stock (RED = LOW STOCK)</h2>
         <table>
             <thead><tr><th>Image</th><th>Product</th><th>Stock</th><th>Sold</th><th>Profit</th><th>Actions</th></tr></thead>
             <tbody id="productTable"></tbody>
         </table>
     </div>
+
+    <!-- ORDER LIST -->
+    <div class="section">
+        <h2>🧾 ALL IMPORTED ORDERS</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Order ID</th><th>Date</th><th>Item</th><th>Qty</th><th>Grand Total</th><th>Customer</th>
+                </tr>
+            </thead>
+            <tbody id="orderTable"></tbody>
+        </table>
+    </div>
+
+    <button onclick="exportData()" class="btn-export">📤 EXPORT FULL REPORT</button>
 </div>
 
 <script>
-let products = JSON.parse(localStorage.getItem("myShopProducts")) || [];
+let products = JSON.parse(localStorage.getItem("bizProducts")) || [];
+let orders = JSON.parse(localStorage.getItem("bizOrders")) || [];
 let lowStockLimit = 10;
 
 // IMAGE PREVIEW
@@ -223,30 +196,65 @@ function previewImage(event) {
     reader.readAsDataURL(event.target.files[0]);
 }
 
+// EXCEL IMPORT (YOUR FULL FORMAT)
+function importExcel() {
+    const file = document.getElementById("excelFile").files[0];
+    const msg = document.getElementById("importStatus");
+    if (!file) { msg.innerText = "Select file first!"; msg.style.color="red"; return; }
+    const reader = new FileReader();
+    reader.onload = e => {
+        const data = new Uint8Array(e.target.result);
+        const wb = XLSX.read(data, { type:"array" });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        orders = XLSX.utils.sheet_to_json(ws);
+        localStorage.setItem("bizOrders", JSON.stringify(orders));
+        renderOrders();
+        msg.innerText = `✅ Imported ${orders.length} orders!`;
+        msg.style.color="green";
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+// RENDER ORDERS
+function renderOrders() {
+    const t = document.getElementById("orderTable"); t.innerHTML = "";
+    orders.forEach(o => {
+        t.innerHTML += `
+        <tr>
+            <td>${o["Order ID"]||""}</td>
+            <td>${o["Date"]||""}</td>
+            <td>${o["Item Name"]||""}</td>
+            <td>${o["Item Quantity"]||""}</td>
+            <td>$${o["Grand Total"]||0}</td>
+            <td>${o["Customer Name"]||""}</td>
+        </tr>`;
+    });
+}
+
 // SAVE PRODUCT
 function saveProduct() {
     const id = document.getElementById("editId").value;
-    const img = document.getElementById("imagePreview").src || "";
     const product = {
         name: document.getElementById("pName").value,
         cost: parseFloat(document.getElementById("pCost").value)||0,
         sell: parseFloat(document.getElementById("pSell").value)||0,
         stock: parseInt(document.getElementById("pStock").value)||0,
-        sold: 0, image: img,
+        sold: 0, image: document.getElementById("imagePreview").src||"",
         ads: parseFloat(document.getElementById("pAds").value)||0,
         ship: parseFloat(document.getElementById("pShip").value)||0,
+        pack: parseFloat(document.getElementById("pPack").value)||0,
         date: new Date().toISOString()
     };
     id ? products[id] = product : products.push(product);
-    localStorage.setItem("myShopProducts", JSON.stringify(products));
+    localStorage.setItem("bizProducts", JSON.stringify(products));
     clearForm(); renderProducts(); updateDashboard(); loadProductList();
 }
 
 // RENDER PRODUCTS
 function renderProducts() {
     const t = document.getElementById("productTable"); t.innerHTML = "";
-    products.forEach((p,i)=>{
-        const prof = (p.sell-p.cost-p.ads-p.ship)*p.sold;
+    products.forEach((p,i) => {
+        const profit = (p.sell-p.cost-p.ads-p.ship-p.pack)*p.sold;
         const low = p.stock < lowStockLimit ? "low-stock" : "";
         t.innerHTML += `
         <tr class="${low}">
@@ -254,39 +262,39 @@ function renderProducts() {
             <td>${p.name}</td>
             <td>${p.stock}</td>
             <td>${p.sold}</td>
-            <td>$${prof.toFixed(2)}</td>
+            <td>$${profit.toFixed(2)}</td>
             <td>
                 <button class="btn-edit" onclick="editProduct(${i})">Edit</button>
+                <button class="btn-del" onclick="deleteProduct(${i})">Delete</button>
             </td>
         </tr>`;
     });
     checkLowStock();
 }
 
-// LOAD PRODUCTS FOR ORDER
+// LOAD PRODUCT LIST
 function loadProductList() {
-    const sel = document.getElementById("orderProduct"); sel.innerHTML = "";
-    products.forEach((p,i)=>sel.innerHTML+=`<option value="${i}">${p.name} ($${p.sell})</option>`);
+    const s = document.getElementById("orderProduct"); s.innerHTML = "";
+    products.forEach((p,i) => s.innerHTML += `<option value="${i}">${p.name} ($${p.sell})</option>`);
 }
 
 // CREATE ORDER + AUTO DEDUCT STOCK
 function createOrder() {
-    const pIndex = document.getElementById("orderProduct").value;
+    const i = document.getElementById("orderProduct").value;
     const qty = parseInt(document.getElementById("orderQty").value);
-    const p = products[pIndex];
-    if(!p || p.stock < qty){alert("Not enough stock!");return;}
+    const p = products[i];
+    if (!p || p.stock < qty) { alert("Out of stock!"); return; }
 
-    // AUTO DEDUCT STOCK
-    p.stock -= qty;
-    p.sold += qty;
-    localStorage.setItem("myShopProducts", JSON.stringify(products));
+    p.stock -= qty; p.sold += qty;
+    localStorage.setItem("bizProducts", JSON.stringify(products));
 
-    // SHOW INVOICE
+    // INVOICE
     document.getElementById("invoice").style.display = "block";
     document.getElementById("invId").innerText = Math.floor(Math.random()*1000000);
     document.getElementById("invDate").innerText = new Date().toLocaleDateString();
     document.getElementById("invCustName").innerText = document.getElementById("custName").value;
     document.getElementById("invCustPhone").innerText = document.getElementById("custPhone").value;
+    document.getElementById("invCustEmail").innerText = document.getElementById("custEmail").value;
     document.getElementById("invCustAddress").innerText = document.getElementById("custAddress").value;
     document.getElementById("invBody").innerHTML = `
     <tr>
@@ -302,58 +310,107 @@ function createOrder() {
 }
 
 // PRINT INVOICE
-function printInvoice() {
-    window.print();
+function printInvoice() { window.print(); }
+
+// EDIT PRODUCT
+function editProduct(i) {
+    const p = products[i];
+    document.getElementById("editId").value = i;
+    document.getElementById("pName").value = p.name;
+    document.getElementById("pCost").value = p.cost;
+    document.getElementById("pSell").value = p.sell;
+    document.getElementById("pStock").value = p.stock;
+    document.getElementById("pAds").value = p.ads;
+    document.getElementById("pShip").value = p.ship;
+    document.getElementById("pPack").value = p.pack;
+    document.getElementById("imagePreview").src = p.image;
+    document.getElementById("imagePreview").style.display = "inline-block";
+}
+
+// DELETE PRODUCT
+function deleteProduct(i) {
+    if (!confirm("Delete?")) return;
+    products.splice(i,1);
+    localStorage.setItem("bizProducts", JSON.stringify(products));
+    renderProducts(); updateDashboard(); loadProductList();
 }
 
 // CLEAR FORM
 function clearForm() {
-    document.getElementById("editId").value="";
-    document.getElementById("pName").value="";
-    document.getElementById("pCost").value="";
-    document.getElementById("pSell").value="";
-    document.getElementById("pStock").value="";
-    document.getElementById("imagePreview").style.display="none";
+    document.getElementById("editId").value = "";
+    document.getElementById("pName").value = "";
+    document.getElementById("pCost").value = "";
+    document.getElementById("pSell").value = "";
+    document.getElementById("pStock").value = "";
+    document.getElementById("pAds").value = "0";
+    document.getElementById("pShip").value = "0";
+    document.getElementById("pPack").value = "0";
+    document.getElementById("imagePreview").style.display = "none";
 }
 
-// EDIT PRODUCT
-function editProduct(i) {
-    const p=products[i];
-    document.getElementById("editId").value=i;
-    document.getElementById("pName").value=p.name;
-    document.getElementById("pCost").value=p.cost;
-    document.getElementById("pSell").value=p.sell;
-    document.getElementById("pStock").value=p.stock;
-    document.getElementById("imagePreview").src=p.image;
-    document.getElementById("imagePreview").style.display="inline-block";
-}
-
-// LOW STOCK
+// LOW STOCK ALERT
 function checkLowStock() {
-    const a = document.getElementById("lowStockAlert");
-    a.style.display = products.filter(p=>p.stock<lowStockLimit).length>0?"block":"none";
+    const alert = document.getElementById("lowStockAlert");
+    const low = products.filter(p => p.stock < lowStockLimit);
+    alert.style.display = low.length > 0 ? "block" : "none";
+    if (low.length > 0 && Notification.permission === "granted") {
+        new Notification("Low Stock!", { body: low.map(x=>x.name).join(", ") });
+    } else { Notification.requestPermission(); }
 }
 
 // DASHBOARD
 function updateDashboard() {
-    let totalStock=0,totalSold=0,totalRev=0,netProfit=0,totalExp=0,top="-",topS=0;
-    products.forEach(p=>{
-        const exp = p.cost+p.ads+p.ship;
-        totalStock+=p.stock; totalSold+=p.sold;
-        totalRev+=p.sell*p.sold; netProfit+=(p.sell-exp)*p.sold;
-        totalExp+=exp*p.sold;
-        if(p.sold>topS){topS=p.sold;top=p.name;}
+    let totalStock=0, totalSold=0, totalRev=0, netProfit=0, totalExp=0;
+    let trending = "-", topSold = 0;
+    let monthlyProfit = 0;
+    const filterMonth = document.getElementById("monthFilter").value;
+
+    products.forEach(p => {
+        const exp = p.cost + p.ads + p.ship + p.pack;
+        const rev = p.sell * p.sold;
+        const prof = (p.sell - exp) * p.sold;
+
+        totalStock += p.stock;
+        totalSold += p.sold;
+        totalRev += rev;
+        netProfit += prof;
+        totalExp += exp * p.sold;
+
+        if (p.sold > topSold) { topSold = p.sold; trending = p.name; }
+
+        // MONTHLY PROFIT
+        if (filterMonth) {
+            const d = new Date(p.date);
+            const m = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0");
+            if (m === filterMonth) monthlyProfit += prof;
+        }
     });
-    document.getElementById("totalProducts").innerText=products.length;
-    document.getElementById("totalStock").innerText=totalStock;
-    document.getElementById("totalSold").innerText=totalSold;
-    document.getElementById("totalRev").innerText="$"+totalRev.toFixed(2);
-    document.getElementById("totalExp").innerText="$"+totalExp.toFixed(2);
-    document.getElementById("netProfit").innerText="$"+netProfit.toFixed(2);
-    document.getElementById("trending").innerText=top;
+
+    document.getElementById("totalProducts").innerText = products.length;
+    document.getElementById("totalStock").innerText = totalStock;
+    document.getElementById("totalSold").innerText = totalSold;
+    document.getElementById("totalRev").innerText = "$"+totalRev.toFixed(2);
+    document.getElementById("totalExp").innerText = "$"+totalExp.toFixed(2);
+    document.getElementById("netProfit").innerText = "$"+netProfit.toFixed(2);
+    document.getElementById("monthlyProfit").innerText = "$"+monthlyProfit.toFixed(2);
+    document.getElementById("trending").innerText = trending;
 }
 
-window.onload=()=>{renderProducts();updateDashboard();loadProductList();};
+// EXPORT
+function exportData() {
+    let csv = "Product,Cost,Sell,Stock,Sold,Revenue,Expenses,Net Profit\n";
+    products.forEach(p => {
+        const exp = p.cost+p.ads+p.ship+p.pack;
+        const prof = (p.sell-exp)*p.sold;
+        csv += `${p.name},${p.cost},${p.sell},${p.stock},${p.sold},${p.sell*p.sold},${exp*p.sold},${prof}\n`;
+    });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+    a.download = "Business_Report.csv"; a.click();
+}
+
+// INIT
+window.onload = () => { renderProducts(); renderOrders(); updateDashboard(); loadProductList(); };
 </script>
 </body>
 </html>
